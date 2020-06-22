@@ -1,0 +1,3 @@
+include ':announcify'
+include ':app'
+rootProject.name = "Announcify Example"
