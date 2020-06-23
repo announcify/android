@@ -29,31 +29,45 @@ class AnnouncifyClient(private val host: String, private val apiKey: String, pri
         Log.i(LOG_TAG, "Search for active announcements.")
         httpClient.newCall(request).enqueue(object: Callback {
             override fun onResponse(call: Call, response: Response) {
+                if (response.code() == 404) {
+                    Log.i(LOG_TAG, "No active announcement available.")
+                    listener.onNoMessage()
+                    return
+                }
+
+                if (response.code() != 200) {
+                    Log.e(LOG_TAG, "Request active announcement failed with HTTP error ($response.code()}!")
+                    fail(Exception("Request active announcement failed. Status code: ${response.code()}"))
+                    return
+                }
+
                 response.body()?.string()?.let { json ->
                     try {
                         val announcement = Gson().fromJson(json, Announcement::class.java)
                         Log.i(LOG_TAG, "Found active announcement $announcement.")
 
                         Handler(Looper.getMainLooper()).post {
-                            listener.onSuccess(announcement)
+                            listener.onMessage(announcement)
                         }
                     } catch (e: JsonSyntaxException) {
                         Log.e(LOG_TAG, "Parsing announcement response failed!", e)
 
-                        Handler(Looper.getMainLooper()).post {
-                            listener.onFail(e)
-                        }
+                        fail(e)
                     }
                 }
             }
 
             override fun onFailure(call: Call, e: IOException) {
-                Log.e(LOG_TAG, "Request announcements failed!", e)
-                Handler(Looper.getMainLooper()).post {
-                    listener.onFail(e)
-                }
+                Log.e(LOG_TAG, "Request active announcement failed!", e)
+                fail(e)
             }
         })
+    }
+
+    private fun fail(exception: Exception) {
+        Handler(Looper.getMainLooper()).post {
+            listener.onFail(exception)
+        }
     }
 
     private fun toLanguageTag(locale: Locale): String {
@@ -107,7 +121,8 @@ class AnnouncifyClient(private val host: String, private val apiKey: String, pri
     }
 
     interface ResultListener {
-        fun onSuccess(announcement: Announcement)
+        fun onMessage(announcement: Announcement)
+        fun onNoMessage()
         fun onFail(e: Exception)
     }
 }

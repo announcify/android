@@ -2,6 +2,7 @@ package io.announcify.example
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -14,6 +15,8 @@ import io.announcify.model.Announcement
 class MainActivity : Activity() {
 
     companion object {
+        val LOG_TAG = MainActivity::class.simpleName
+
         init {
             AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         }
@@ -34,7 +37,7 @@ class MainActivity : Activity() {
             .apiKey("TP1enlANO31faoqf3ihnDDCPRet6rwxV")
             .projectId(1)
             .resultListener(object: AnnouncifyClient.ResultListener {
-                override fun onSuccess(announcement: Announcement) {
+                override fun onMessage(announcement: Announcement) {
                     val bannerView: CardView = findViewById(R.id.banner)
                     bannerView.visibility = View.VISIBLE
 
@@ -48,6 +51,11 @@ class MainActivity : Activity() {
                     okButton.setOnClickListener {
                         bannerView.visibility = View.GONE
                     }
+                }
+
+                override fun onNoMessage() {
+                    val bannerView: CardView = findViewById(R.id.banner)
+                    bannerView.visibility = View.GONE
                 }
 
                 override fun onFail(e: Exception) {
