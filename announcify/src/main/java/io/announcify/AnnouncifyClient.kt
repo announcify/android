@@ -1,5 +1,7 @@
 package io.announcify
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -80,7 +82,14 @@ class AnnouncifyClient(private val host: String, private val apiKey: String, pri
         return "${language}_$country"
     }
 
-    class Builder {
+    class Builder(private val context: Context) {
+
+        companion object {
+            const val DEFAULT_HOST = "api.announcify.io"
+            const val META_PREFIX = "announcify"
+            const val META_API_KEY_KEY = "${META_PREFIX}_api_key"
+            const val META_PROJECT_ID_KEY = "${META_PREFIX}_project_id"
+        }
 
         private var host: String? = null
         private var apiKey: String? = null
@@ -110,9 +119,22 @@ class AnnouncifyClient(private val host: String, private val apiKey: String, pri
 
         // TODO: read fields from meta fields by app's manifest (like facebook lib)
         fun build(): AnnouncifyClient {
-            val host = host ?: throw IllegalArgumentException("Field host is required and must be set!")
-            val apiKey = apiKey ?: throw IllegalArgumentException("Field `apiKey` is required and must be set!")
-            val projectId = projectId ?: throw IllegalArgumentException("Field `projectId` is required and must be set!")
+            val applicationInfo = context.packageManager.getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+            val metaData = applicationInfo.metaData
+
+            val host = host ?: DEFAULT_HOST
+            val apiKey = when {
+                    apiKey != null -> apiKey!!
+                    metaData.getString(META_API_KEY_KEY) != null -> metaData.getString(
+                        META_API_KEY_KEY)
+                    else ->  throw IllegalArgumentException("Field `apiKey` is required and must be set!")
+                }!!
+            val projectId = when {
+                    projectId != null -> projectId
+                    metaData.getInt(META_PROJECT_ID_KEY, -1) != -1 -> metaData.getInt(
+                        META_PROJECT_ID_KEY)
+                    else ->  throw IllegalArgumentException("Field `projectId` is required and must be set!")
+                }!!
             val locale = locale ?: Locale.getDefault()
             val listener = listener ?: throw IllegalArgumentException("Field `resultListener` is required and must be set!")
 
