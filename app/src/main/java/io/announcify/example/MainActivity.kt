@@ -7,7 +7,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
-import io.announcify.Client
+import io.announcify.AnnouncifyClient
 import io.announcify.model.Announcement
 
 
@@ -29,11 +29,11 @@ class MainActivity : Activity() {
     override fun onStart() {
         super.onStart()
 
-        Client.Builder()
+        AnnouncifyClient.Builder()
             .host("api.announcify.io")
             .apiKey("TP1enlANO31faoqf3ihnDDCPRet6rwxV")
             .projectId(1)
-            .resultListener(object: Client.ResultListener {
+            .resultListener(object: AnnouncifyClient.ResultListener {
                 override fun onSuccess(announcement: Announcement) {
                     val bannerView: CardView = findViewById(R.id.banner)
                     bannerView.visibility = View.VISIBLE

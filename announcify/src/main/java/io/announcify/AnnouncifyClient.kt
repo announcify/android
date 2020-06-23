@@ -1,5 +1,6 @@
 package io.announcify
 
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -8,11 +9,12 @@ import com.google.gson.JsonSyntaxException
 import io.announcify.model.Announcement
 import okhttp3.*
 import java.io.IOException
+import java.util.*
 
-class Client(val host: String, val apiKey: String, val projectId: Int, val listener: ResultListener) {
+class AnnouncifyClient(private val host: String, private val apiKey: String, private val projectId: Int, private val locale: Locale, private val listener: ResultListener) {
 
     companion object {
-        val LOG_TAG = Client::class.simpleName
+        val LOG_TAG = AnnouncifyClient::class.simpleName
     }
 
     fun request() {
@@ -20,7 +22,7 @@ class Client(val host: String, val apiKey: String, val projectId: Int, val liste
             .get()
             .url("https://$host/projects/$projectId/active-announcement/active-message")
             .header("x-api-key", apiKey)
-            .header("accept-language", "en-US")
+            .header("accept-language", toLanguageTag(locale))
             .build()
 
         val httpClient = OkHttpClient()
@@ -54,11 +56,22 @@ class Client(val host: String, val apiKey: String, val projectId: Int, val liste
         })
     }
 
+    private fun toLanguageTag(locale: Locale): String {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return locale.toLanguageTag()
+        }
+
+        val language = locale.language
+        val country = locale.country
+        return "${language}_$country"
+    }
+
     class Builder {
 
         private var host: String? = null
         private var apiKey: String? = null
         private var projectId: Int? = null
+        private var locale: Locale? = null
         private var listener: ResultListener? = null
 
         fun host(host: String): Builder {
@@ -82,13 +95,14 @@ class Client(val host: String, val apiKey: String, val projectId: Int, val liste
         }
 
         // TODO: read fields from meta fields by app's manifest (like facebook lib)
-        fun build(): Client {
+        fun build(): AnnouncifyClient {
             val host = host ?: throw IllegalArgumentException("Field host is required and must be set!")
             val apiKey = apiKey ?: throw IllegalArgumentException("Field `apiKey` is required and must be set!")
             val projectId = projectId ?: throw IllegalArgumentException("Field `projectId` is required and must be set!")
+            val locale = locale ?: Locale.getDefault()
             val listener = listener ?: throw IllegalArgumentException("Field `resultListener` is required and must be set!")
 
-            return Client(host, apiKey, projectId, listener)
+            return AnnouncifyClient(host, apiKey, projectId, locale, listener)
         }
     }
 
