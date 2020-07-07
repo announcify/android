@@ -32,7 +32,7 @@ class MainActivity : Activity() {
     override fun onStart() {
         super.onStart()
 
-        AnnouncifyClient.Builder()
+        AnnouncifyClient.Builder(this)
             .host("api.announcify.io")
             .apiKey("TP1enlANO31faoqf3ihnDDCPRet6rwxV")
             .projectId(1)

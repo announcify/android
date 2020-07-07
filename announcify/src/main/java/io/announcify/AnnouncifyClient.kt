@@ -38,7 +38,7 @@ class AnnouncifyClient(private val host: String, private val apiKey: String, pri
                 }
 
                 if (response.code() != 200) {
-                    Log.e(LOG_TAG, "Request active announcement failed with HTTP error ($response.code()}!")
+                    Log.e(LOG_TAG, "Request active announcement failed with HTTP error (${response.code()}!")
                     fail(Exception("Request active announcement failed. Status code: ${response.code()}"))
                     return
                 }

@@ -1,1 +1,5 @@
-# android
+Announcify - Android
+====================
+
+## Get started ##
+
