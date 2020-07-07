@@ -33,7 +33,9 @@ class AnnouncifyClient(private val host: String, private val apiKey: String, pri
             override fun onResponse(call: Call, response: Response) {
                 if (response.code() == 404) {
                     Log.i(LOG_TAG, "No active announcement available.")
-                    listener.onNoMessage()
+                    Handler(Looper.getMainLooper()).post {
+                        listener.onNoMessage()
+                    }
                     return
                 }
 
