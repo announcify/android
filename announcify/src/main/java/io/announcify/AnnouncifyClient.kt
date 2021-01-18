@@ -25,6 +25,8 @@ class AnnouncifyClient(private val host: String, private val apiKey: String, pri
             .url("https://$host/projects/$projectId/active-announcement/active-message")
             .header("x-api-key", apiKey)
             .header("accept-language", toLanguageTag(locale))
+            .header("user-agent", "Android/v${Build.VERSION.RELEASE} " +
+                    "Announcify/v${BuildConfig.VERSION_NAME}+${BuildConfig.VERSION_CODE}")
             .build()
 
         val httpClient = OkHttpClient()
